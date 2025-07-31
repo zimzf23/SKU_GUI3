@@ -22,7 +22,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Catalog.py" />
+    <Compile Include="data.py" />
     <Compile Include="dependencies.py" />
     <Compile Include="global.py" />
     <Compile Include="SKU_GUI3.py" />
