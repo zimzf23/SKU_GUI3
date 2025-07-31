@@ -22,7 +22,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Classes.py" />
+    <Compile Include="Catalog.py" />
     <Compile Include="dependencies.py" />
     <Compile Include="global.py" />
     <Compile Include="SKU_GUI3.py" />
@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="config.toml" />
+    <Content Include="data.toml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="assets\" />

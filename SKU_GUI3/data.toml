@@ -1,0 +1,77 @@
+[sections.basic]
+ref = { type = "str", default = "" }
+name = { type = "str", default = "" }
+description = { type = "str", default = "" }
+cls = { type = "int", default = 0 }          # was "class" in your original dict
+type = { type = "int", default = 0 }
+
+[sections.decoded]
+level = { type = "int", default = 0 }
+type = { type = "str", default = "X" }
+cat = { type = "int", default = 0 }
+subcat = { type = "int", default = 0 }
+
+[sections.available]
+external = { type = "int", default = 0 }
+mechanical = { type = "int", default = 0 }
+electrical = { type = "int", default = 0 }
+shipping = { type = "int", default = 0 }
+supplier = { type = "int", default = 0 }
+finance = { type = "int", default = 0 }
+certs = { type = "int", default = 0 }
+enviromental = { type = "int", default = 0 }
+
+[sections.external_manufacturer]
+manufacturer = { type = "str", default = "" }
+name = { type = "str", default = "" }
+number = { type = "str", default = "" }
+description = { type = "str", default = "" }
+ean = { type = "int", default = 0 }
+
+[sections.mechanical]
+weight = { type = "float", default = 0.0 }
+dimensions = { type = "str", default = "" }
+material = { type = "str", default = "" }
+color = { type = "str", default = "" }
+finish = { type = "str", default = "" }
+shape = { type = "str", default = "" }
+size = { type = "str", default = "" }
+
+[sections.electrical]
+voltage = { type = "float", default = 0.0 }
+current = { type = "float", default = 0.0 }
+power = { type = "float", default = 0.0 }
+frequency = { type = "float", default = 0.0 }
+phase = { type = "float", default = 0.0 }
+protection = { type = "str", default = "" }
+efficiency = { type = "str", default = "" }
+
+[sections.shipping]
+shipping_weight = { type = "float", default = 0.0 }
+shipping_dimensions = { type = "str", default = "" }
+shipping_method = { type = "str", default = "" }
+shipping_cost = { type = "float", default = 0.0 }
+
+[sections.supplier]
+supplier = { type = "str", default = "" }
+contact = { type = "str", default = "" }
+phone = { type = "str", default = "" }
+email = { type = "str", default = "" }
+address = { type = "str", default = "" }
+
+[sections.finance]
+cost = { type = "float", default = 0.0 }
+price = { type = "float", default = 0.0 }
+margin = { type = "float", default = 0.0 }
+currency = { type = "str", default = "" }
+payment_terms = { type = "str", default = "" }
+
+[sections.certs]
+certifications = { type = "str", default = "" }
+compliance = { type = "str", default = "" }
+standards = { type = "str", default = "" }
+
+[sections.enviromental]
+recyclable = { type = "bool", default = false }
+hazardous = { type = "bool", default = false }
+disposal_instructions = { type = "str", default = "" }
