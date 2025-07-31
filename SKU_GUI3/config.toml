@@ -27,7 +27,7 @@ external_color = "#ee9d8c"
 [tables.main]
 name = "Main"
 schema = "dbo"
-fields = [ "Code", "Title", "Description", "Class",]
+fields = [ "Code", "Title", "Description", "Class","Type"]
 
 [tables.categories]
 name = "Categories"
