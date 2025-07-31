@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36327.8 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "SKU_GUI3", "SKU_GUI3\SKU_GUI3.pyproj", "{1519EBF8-927B-44E6-9659-4B8124FDD4FD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1519EBF8-927B-44E6-9659-4B8124FDD4FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1519EBF8-927B-44E6-9659-4B8124FDD4FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4458765B-2676-4D59-91EF-9C384CC45562}
+	EndGlobalSection
+EndGlobal

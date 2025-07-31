@@ -1,0 +1,100 @@
+# -*- coding: utf-8 -*-
+[server]
+host = "200.234.235.23"
+port = "1433"
+username = "Admin"
+password = 1234
+
+[appearance]
+theme = "light"
+
+[visibility]
+toolbox = 1
+register = 1
+checkboxes = 1
+maincard = 1
+creator_card = 0
+tree_card = 1
+
+[tables]
+main_db = "ArticleDB"
+
+[appearance.class_labels]
+part_color = "#90ee8c"
+kit_color = "#8cd0ee"
+external_color = "#ee9d8c"
+
+[tables.main]
+name = "Main"
+schema = "dbo"
+fields = [ "Code", "Title", "Description", "Class",]
+
+[tables.categories]
+name = "Categories"
+schema = "dbo"
+fields = [ "Type", "Catno", "Subcatno", "Text",]
+
+[tables.level]
+name = "Level"
+schema = "dbo"
+fields = [ "Level", "Text",]
+
+[tables.file_index]
+name = "ArticleFiles"
+schema = "dbo"
+fields = [ "Code", "Fcat", "Fsubcat", "stream_id",]
+
+[tables.Article_index]
+name = "ArticleIndex"
+schema = "dbo"
+fields = [ "Code", "Mechanical_Props", "Electrical_Props", "Shipping", "Supplier", "Finance", "Certifications", "Enviromental",]
+
+[tables.documents]
+name = "ArticleDocuments"
+schema = "dbo"
+fields = [ "stream_id", "file_stream", "name", "path_locator", "parent_path_locator", "file_type", "cached_file_size", "creation_time", "last_write_time", "last_access_time", "is_directory", "is_offline", "is_hidden", "is_readonly", "is_archive", "is_system", "is_temporary",]
+
+[tables.ExternalManufacturer_data]
+name = "ExternalManufacturerData"
+schema = "dbo"
+fields = [ "Manufacturer", "Name", "Number", "Description", "Ean", "Code",]
+
+[tables.Mechanical_data]
+name = "MechanicalData"
+schema = "dbo"
+fields = [ "Material", "Treatment", "Hardness",]
+
+[tables.Electrical_data]
+name = "MechanicalData"
+schema = "dbo"
+fields = [ "Voltage", "Intensity", "Frequency",]
+
+[tables.Shipping]
+name = "MechanicalData"
+schema = "dbo"
+fields = [ "Code", "Length", "Width", "Height", "Country", "HS",]
+
+[data.classes]
+part = 1
+kit = 2
+external = 4
+
+[documents.cats]
+images = 10
+documents = 20
+cad_files = 30
+
+[documents.images]
+thumbnails = 10
+emd_logo = 20
+
+[documents.documents]
+datasheet = 10
+
+[documents.files]
+step = 10
+f3d = 20
+
+[documents.step]
+thumbnails = 10
+photos = 20
