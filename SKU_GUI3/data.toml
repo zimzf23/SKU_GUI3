@@ -72,6 +72,7 @@ compliance = { type = "str", default = "" }
 standards = { type = "str", default = "" }
 
 [sections.enviromental]
+CO2 = { type = "int", default = 0.0 }
 recyclable = { type = "bool", default = false }
 hazardous = { type = "bool", default = false }
 disposal_instructions = { type = "str", default = "" }
