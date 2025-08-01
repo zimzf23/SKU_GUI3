@@ -20,11 +20,12 @@ def main_card():
                 ui.label("Ref").classes('w-full').style('font-family: Magistral; font-size:3rem;').bind_text(item.basic, "ref")
                 ui.label().classes('w-full').style('font-family: Muli; font-size:2rem;').bind_text(item.basic, "name")
                 with ui.row().classes('space-x-10'):
-                    ui.label().style('font-weight: bold;').bind_text(item.decoded, "level")
-                    ui.label().style('font-weight: bold;').bind_text(item.decoded, "type")
-                    ui.label().style('font-weight: bold;').bind_text(item.decoded, "cat") 
-                    ui.label().style('font-weight: bold;').bind_text(item.decoded, "subcat") 
-                    ui.label().style(f'font-weight: bold; color: blue')  
+                    ui.label().style('font-weight: bold;').bind_text(item.strings, "level_str")
+                    ui.label().style('font-weight: bold;').bind_text(item.strings, "type_str")
+                    ui.label().style('font-weight: bold;').bind_text(item.strings, "cat_str") 
+                    ui.label().style('font-weight: bold;').bind_text(item.strings, "subcat_str") 
+                    ui.label().style(f'font-weight: bold; color: blue').bind_text(item.strings, "cls_str")
+                    ui.label().style(f'font-weight: bold; color: red').bind_text(item.strings, "wear_str")
                 ui.input(label='Descripción').classes('w-full').style('font-family: Muli; font-size:1rem;').bind_value(item.basic, "description")
             # Media Column
             with ui.column().classes('w-full mx-auto p-4'):

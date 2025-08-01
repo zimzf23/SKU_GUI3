@@ -7,7 +7,7 @@ wear = { type = "int", default = 0 }
 
 [sections.decoded]
 level = { type = "int", default = 0 }
-type = { type = "str", default = "X" }
+type = { type = "str", default = "" }
 cat = { type = "int", default = 0 }
 subcat = { type = "int", default = 0 }
 
@@ -15,7 +15,7 @@ subcat = { type = "int", default = 0 }
 cls_str = { type = "str", default = "" }          # was "class" in your original dict
 wear_str = { type = "str", default = "" }
 level_str = { type = "str", default = "" }
-type_str = { type = "str", default = "X" }
+type_str = { type = "str", default = "" }
 cat_str = { type = "str", default = "" }
 subcat_str = { type = "str", default = "" }
 
