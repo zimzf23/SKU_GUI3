@@ -1,6 +1,20 @@
 from dependencies import *
 
-# Global variables
+# Reactive state holder
+class State:
+    def __init__(self, ref: str = "W-0X00-0000"):
+        self._current_ref = ref
+
+    @property
+    def current_ref(self):
+        return self._current_ref
+
+    @current_ref.setter
+    def current_ref(self, v: str):
+        self._current_ref = v
+        ui.update()  # force NiceGUI to re-evaluate lambdas / refresh bindings
+
+state = State()
 
 # Global results
 

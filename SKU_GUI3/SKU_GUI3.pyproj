@@ -28,6 +28,7 @@
     <Compile Include="text_queries.py" />
     <Compile Include="search_flow.py" />
     <Compile Include="SKU_GUI3.py" />
+    <Compile Include="ui_cards.py" />
     <Compile Include="ui_components.py" />
   </ItemGroup>
   <ItemGroup>
