@@ -1,9 +1,11 @@
 from dependencies import *
 
 # Reactive state holder
+
 class State:
     def __init__(self, ref: str = "W-0X00-0000"):
         self._current_ref = ref
+        self._subs: list[callable] = []
 
     @property
     def current_ref(self):
@@ -12,9 +14,21 @@ class State:
     @current_ref.setter
     def current_ref(self, v: str):
         self._current_ref = v
-        ui.update()  # force NiceGUI to re-evaluate lambdas / refresh bindings
+        ui.update()
+        for fn in self._subs:
+            try:
+                fn(v)
+            except Exception:
+                pass
+
+    def subscribe(self, fn: callable):
+        self._subs.append(fn)
+
+    def set_ref(self, v: str):
+        self.current_ref = v
 
 state = State()
+
 
 # Global results
 

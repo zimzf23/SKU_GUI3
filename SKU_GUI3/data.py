@@ -1,7 +1,7 @@
 # catalog.py
 from dependencies import *
 
-# --- schema-driven dynamic class builder ---
+# --- schema-driven dynamic bindable class builder ---
 TYPE_MAP = {
     "str": str,
     "int": int,
@@ -30,9 +30,11 @@ def build_section_classes(schema_path: str | Path = "data.toml"):
                 annotations.append((field_name, py_type, field(default=default)))
         cls_name = section_name.capitalize() if section_name.isidentifier() else section_name
         cls = make_dataclass(cls_name, annotations)
+        # make the section class bindable
+        cls = binding.bindable_dataclass(cls)
         created_classes[section_name] = cls
 
-    # aggregate FullItem
+    # aggregate FullItem with bindable subsections
     fullitem_fields = []
     for name, cls in created_classes.items():
         fullitem_fields.append((
@@ -41,6 +43,7 @@ def build_section_classes(schema_path: str | Path = "data.toml"):
             field(default_factory=cls)
         ))
     FullItem = make_dataclass("FullItem", fullitem_fields)
+    FullItem = binding.bindable_dataclass(FullItem)
     return created_classes, FullItem
 
 # build once (module-level)
@@ -54,7 +57,6 @@ class Catalog:
     def get_or_create(self, ref: str, **basic_kwargs) -> Any:
         if ref not in self.items:
             item = FullItem()
-            # set basic.ref if present
             if hasattr(item, "basic"):
                 setattr(item.basic, "ref", ref)
                 for k, v in basic_kwargs.items():

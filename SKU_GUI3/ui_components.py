@@ -28,7 +28,7 @@ def main_layout():
     # Main Body
     with ui.column().classes('w-full'):
         #Main Card
-        maincard = main_card()
+        main_card()
         #Ref Creator
      
         # Checkbox Card
