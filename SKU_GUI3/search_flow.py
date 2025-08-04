@@ -1,9 +1,10 @@
-from base64 import decode
 from dependencies import * 
 from data import catalog
 from text_queries import search, get_cat_text, get_level_text
 from state import state
 from transcode import decode_ref, decode_cls_wear
+from file_queries import find_files, get_thumbnail
+from encoding import blob_to_data_uri
 
 def get_basic_data(ref_val):
     # Creates a ref on the catalog and gets always present data
@@ -21,11 +22,15 @@ def get_basic_data(ref_val):
     decode_cls_wear(ref_val)
 
     #move to file query
+    lookup_get_thumbnail(ref_val,item)
 
-def get_thumbnail(ref_val):
+def lookup_get_thumbnail(ref_val,item):
     # Get the thumbnail image for the item
     # Query the thumbnail
     fcat = config['documents']['cats']['images']
     fsubcat = config['documents']['images']['thumbnails']
     # Get streamid
-    streamid = find_files(ref_value,fcat,fsubcat)
+    streamid = find_files(ref_val,fcat,fsubcat)
+    blob = get_thumbnail(streamid)
+    thumb_uri = (blob_to_data_uri(blob,'image/jpeg') if blob else img_loading)
+    item.thumbnail.thumbnail = thumb_uri

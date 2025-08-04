@@ -29,8 +29,12 @@ def main_card():
                 ui.input(label='Descripción').classes('w-full').style('font-family: Muli; font-size:1rem;').bind_value(item.basic, "description")
             # Media Column
             with ui.column().classes('w-full mx-auto p-4'):
-                state.image_view = ui.image(img_loading).style('width:12rem; height:12rem; object-fit: contain;')
+                if item.thumbnail.thumbnail:
+                    thumb = ui.image(item.thumbnail.thumbnail).style('width:12rem; height:12rem; object-fit: contain;')
+                else:
+                    thumb = ui.image(img_loading).style('width:12rem; height:12rem; object-fit:contain;')
 
 # Subscribe to state changes to refresh the card
 state.subscribe(lambda ref: main_card.refresh())
+
 

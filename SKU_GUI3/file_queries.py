@@ -1,8 +1,8 @@
 from dependencies import *
-from state import state
+import state
 
 def find_files(ref_value,fcat,fsubcat):
-    conn = pyodbc.connect(state.connection_string)
+    conn = pyodbc.connect(state.sku_conn_string)
     cursor = conn.cursor() 
 
     # Grab the level‑table metadata
@@ -37,3 +37,30 @@ def find_files(ref_value,fcat,fsubcat):
     cursor.close()
     conn.close()
     return result if result else None
+
+def get_thumbnail(stream_id):
+    # Connect
+    conn = pyodbc.connect(state.sku_conn_string)
+    cursor = conn.cursor() 
+
+    # Grab the level‑table metadata
+    database = state.database
+    table_cfg = config["tables"]["documents"]
+    tbl_name  = table_cfg["name"]     # "ArticleDocuments"
+    schema    = table_cfg["schema"]   # "dbo"
+    fields    = table_cfg["fields"]   # ["a fuckton of fields"]
+
+    streamid  = fields[0]  # "streamid"
+    filestream  = fields[1]  # "streamid"
+    
+    # Query
+    cursor.execute( f"""
+        SELECT
+            CAST([{filestream}] AS VARBINARY(MAX)) AS blobdata
+        FROM [{database}].[{schema}].[{tbl_name}]
+        WHERE [{streamid}] = ?
+    """,stream_id)
+    result = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return result[0] if result else None
