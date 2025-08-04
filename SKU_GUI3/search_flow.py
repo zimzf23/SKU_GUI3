@@ -17,7 +17,15 @@ def get_basic_data(ref_val):
     item.strings.type_str =  get_cat_text({'Level': 0,'Type': item.decoded.type,'Cat': 0,'Subcat': 0,'Class': 0})
     item.strings.cat_str =  get_cat_text({'Level': 0,'Type': item.decoded.type,'Cat': item.decoded.cat,'Subcat': 0,'Class': 0})
     item.strings.subcat_str =  get_cat_text({'Level': 0,'Type': item.decoded.type,'Cat': item.decoded.cat,'Subcat': item.decoded.subcat,'Class': 0})
-
+    # Decode class and wear
     decode_cls_wear(ref_val)
-    print (item)
 
+    #move to file query
+
+def get_thumbnail(ref_val):
+    # Get the thumbnail image for the item
+    # Query the thumbnail
+    fcat = config['documents']['cats']['images']
+    fsubcat = config['documents']['images']['thumbnails']
+    # Get streamid
+    streamid = find_files(ref_value,fcat,fsubcat)

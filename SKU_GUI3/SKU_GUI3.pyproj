@@ -24,6 +24,7 @@
   <ItemGroup>
     <Compile Include="data.py" />
     <Compile Include="dependencies.py" />
+    <Compile Include="file_queries.py" />
     <Compile Include="state.py" />
     <Compile Include="text_queries.py" />
     <Compile Include="search_flow.py" />

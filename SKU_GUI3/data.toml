@@ -5,6 +5,9 @@ description = { type = "str", default = "" }
 cls = { type = "int", default = 0 }          # was "class" in your original dict
 wear = { type = "int", default = 0 }
 
+[sections.thumbnail]
+thumbnail = { type = "str", default = "", format = "base64" } # Base64 encoded image data
+
 [sections.decoded]
 level = { type = "int", default = 0 }
 type = { type = "str", default = "" }
