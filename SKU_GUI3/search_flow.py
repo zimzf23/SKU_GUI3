@@ -34,3 +34,4 @@ def lookup_get_thumbnail(ref_val,item):
     blob = get_thumbnail(streamid)
     thumb_uri = (blob_to_data_uri(blob,'image/jpeg') if blob else img_loading)
     item.thumbnail.thumbnail = thumb_uri
+    print(item)
