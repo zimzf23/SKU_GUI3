@@ -22,8 +22,16 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="data.py" />
     <Compile Include="dependencies.py" />
+    <Compile Include="encoding.py" />
+    <Compile Include="file_queries.py" />
+    <Compile Include="state.py" />
+    <Compile Include="text_queries.py" />
+    <Compile Include="search_flow.py" />
     <Compile Include="SKU_GUI3.py" />
+    <Compile Include="transcode.py" />
+    <Compile Include="ui_cards.py" />
     <Compile Include="ui_components.py" />
   </ItemGroup>
   <ItemGroup>
@@ -39,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="config.toml" />
+    <Content Include="data.toml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="assets\" />

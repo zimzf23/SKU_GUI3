@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from dependencies import *
+from ui_cards import main_card
 
 def styles():
     ui.add_head_html('<style>body {background-color: GhostWhite; }</style>')
@@ -27,9 +28,9 @@ def main_layout():
     # Main Body
     with ui.column().classes('w-full'):
         #Main Card
-        ui.label('')
+        main_card()
         #Ref Creator
-        
+     
         # Checkbox Card
         
         #Procedural content pages

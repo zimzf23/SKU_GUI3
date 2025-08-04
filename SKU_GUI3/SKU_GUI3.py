@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 #Import Modules
+from logging import PlaceHolder
 from dependencies import *
 from ui_components import header_and_search, main_layout
+from data import catalog
+from search_flow import get_basic_data
 
 @ui.page('/home')
 def page_layout():
     # Build Header
-    header_and_search(None)
+    header_and_search(get_basic_data)
 
     # Build Body
     main_layout()
