@@ -7,14 +7,14 @@ class State:
         self._subs: list[callable] = []
         
         # Visibility flags for content cards (reactive)
-        self._external_visible = True
-        self._mechanical_visible = True
-        self._electrical_visible = True
-        self._shipping_visible = True
-        self._supplier_visible = True
-        self._finance_visible = True
-        self._certs_visible = True
-        self._enviromental_visible = True  # Note: Consistent spelling as 'enviromental' from data.toml
+        self._external_visible = False
+        self._mechanical_visible = False
+        self._electrical_visible = False
+        self._shipping_visible = False
+        self._supplier_visible = False
+        self._finance_visible = False
+        self._certs_visible = False
+        self._enviromental_visible = False  # Note: Consistent spelling as 'enviromental' from data.toml
 
     @property
     def current_ref(self):

@@ -292,16 +292,16 @@ def get_available_data(ref_val, item):
             get_mechanical_data(ref_val, item, cursor, conn)
         if item.available.electrical > 0:
             get_electrical_data(ref_val, item, cursor, conn)
-        if item.available.shipping > 0:
-            get_shipping_data(ref_val, item, cursor, conn)
-        if item.available.supplier > 0:
-            get_supplier_data(ref_val, item, cursor, conn)
-        if item.available.finance > 0:
-            get_finance_data(ref_val, item, cursor, conn)
-        if item.available.certs > 0:
-            get_certs_data(ref_val, item, cursor, conn)
-        if item.available.enviromental > 0:
-            get_enviromental_data(ref_val, item, cursor, conn)
+        #if item.available.shipping > 0:
+        #    get_shipping_data(ref_val, item, cursor, conn)
+        #if item.available.supplier > 0:
+        #    get_supplier_data(ref_val, item, cursor, conn)
+        #if item.available.finance > 0:
+        #    get_finance_data(ref_val, item, cursor, conn)
+        #if item.available.certs > 0:
+        #    get_certs_data(ref_val, item, cursor, conn)
+        #if item.available.enviromental > 0:
+        #    get_enviromental_data(ref_val, item, cursor, conn)
     except pyodbc.Error as e:
         print(f"Error fetching available data: {e}")
     finally:
@@ -358,7 +358,7 @@ def get_mechanical_data(ref_val, item, cursor, conn):
 def get_electrical_data(ref_val, item, cursor, conn):
     try:
         table_cfg = config["tables"]["Electrical_data"]
-        tbl_name = table_cfg["name"]  # Note: config has "MechanicalData" – fix in config.toml if typo
+        tbl_name = table_cfg["name"] 
         schema = table_cfg["schema"]
         code_col = "Code"  # Assume Code
         query = f"""
@@ -378,7 +378,7 @@ def get_electrical_data(ref_val, item, cursor, conn):
 
 def get_shipping_data(ref_val, item, cursor, conn):
     try:
-        table_cfg = config["tables"]["Shipping"]
+        table_cfg = config["tables"]["Shipping_data"]
         tbl_name = table_cfg["name"]  # Note: config has "MechanicalData" – fix if typo
         schema = table_cfg["schema"]
         code_col = table_cfg["fields"][0]  # "Code"

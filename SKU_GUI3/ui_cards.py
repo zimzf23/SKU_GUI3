@@ -86,13 +86,10 @@ def content_cards():
         if item.available.electrical > 0:
             with ui.card().classes('w-full mx-auto p-4').bind_visibility(state, 'electrical_visible'):
                 ui.label('Electrical').style('font-weight: bold;')
-                ui.number('Voltage').bind_value(item.electrical, 'voltage')
-                ui.number('Current').bind_value(item.electrical, 'current')
-                ui.number('Power').bind_value(item.electrical, 'power')
-                ui.number('Frequency').bind_value(item.electrical, 'frequency')
-                ui.number('Phase').bind_value(item.electrical, 'phase')
-                ui.input('Protection').bind_value(item.electrical, 'protection')
-                ui.input('Efficiency').bind_value(item.electrical, 'efficiency')
+                ui.input('Voltage').bind_value(item.electrical, 'voltage')
+                ui.input('Current').bind_value(item.electrical, 'current')
+                ui.input('Frequency').bind_value(item.electrical, 'frequency')
+                ui.input('Efficiency')
 
         # Shipping Card
         if item.available.shipping > 0:
@@ -117,9 +114,9 @@ def content_cards():
         if item.available.finance > 0:
             with ui.card().classes('w-full mx-auto p-4').bind_visibility(state, 'finance_visible'):
                 ui.label('Finance').style('font-weight: bold;')
-                ui.number('Cost').bind_value(item.finance, 'cost')
-                ui.number('Price').bind_value(item.finance, 'price')
-                ui.number('Margin').bind_value(item.finance, 'margin')
+                ui.input('Cost').bind_value(item.finance, 'cost')
+                ui.input('Price').bind_value(item.finance, 'price')
+                ui.input('Margin').bind_value(item.finance, 'margin')
                 ui.input('Currency').bind_value(item.finance, 'currency')
                 ui.input('Payment Terms').bind_value(item.finance, 'payment_terms')
 

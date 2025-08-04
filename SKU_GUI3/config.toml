@@ -65,12 +65,12 @@ schema = "dbo"
 fields = [ "Material", "Treatment", "Hardness" ]  # Already good, but add "Code" if needed for WHERE
 
 [tables.Electrical_data]
-name = "ElectricalData"  # Fixed from "MechanicalData"
+name = "ElectricalData"  
 schema = "dbo"
 fields = [ "Voltage", "Intensity", "Frequency" ]  # Add "Code" if needed
 
-[tables.Shipping]
-name = "ShippingData"  # Fixed from "MechanicalData"
+[tables.Shipping_data]
+name = "ShippingData"  
 schema = "dbo"
 fields = [ "Code", "Length", "Width", "Height", "Country", "HS" ]
 
