@@ -37,7 +37,9 @@ def visibility_controls():
     if not item:
         return
     with ui.card().classes('w-full mx-auto p-4'):
-        ui.label('Content Cards Visibility').style('font-family: Muli; font-size: 1.2rem; font-weight: bold;')
+        # Title 
+        ui.label('Paginas').style('font-family: Magistral; font-size:1.6rem;')
+        ui.separator()
         with ui.row().classes('w-full'):
             if item.available.external > 0:
                 ui.checkbox('External').bind_value(state, 'external_visible')
@@ -63,42 +65,71 @@ def content_cards():
         # External Card
         if item.available.external > 0:
             with ui.card().classes('w-full mx-auto p-4').bind_visibility(state, 'external_visible'):
-                ui.label('External Manufacturer').style('font-weight: bold;')
-                ui.input('Manufacturer').bind_value(item.external_manufacturer, 'manufacturer')
-                ui.input('Name').bind_value(item.external_manufacturer, 'name')
-                ui.input('Number').bind_value(item.external_manufacturer, 'number')
-                ui.input('Description').bind_value(item.external_manufacturer, 'description')
-                ui.number('EAN').bind_value(item.external_manufacturer, 'ean')
+                # Title 
+                ui.label('Datos fabricante').style('font-family: Magistral; font-size:1.6rem;')
+                ui.separator()
+                # Body
+                with ui.row().classes('w-full justify-between items-start h-full'):
+                    with ui.grid(columns='auto auto').classes('gap-3').style('max-width: 70%;'):
+                        ui.input('Fabricante').bind_value(item.external_manufacturer, 'manufacturer').props('readonly, borderless')
+                        ui.input('Nombre').bind_value(item.external_manufacturer, 'name').props('readonly, borderless')
+                        ui.input('Referencia').bind_value(item.external_manufacturer, 'number').props('readonly, borderless')
+                        ui.input('Descripción').bind_value(item.external_manufacturer, 'description').props('readonly, borderless')
+                        ui.input('EAN').bind_value(item.external_manufacturer, 'ean').props('readonly, borderless')
+                    with ui.column().classes('tems-end h-full').style('min-width: 8rem;'):
+                        ui.button('Hoja de datos', icon='file_open').classes('w-full')
 
         # Mechanical Card
         if item.available.mechanical > 0:
             with ui.card().classes('w-full mx-auto p-4').bind_visibility(state, 'mechanical_visible'):
-                ui.label('Mechanical').style('font-weight: bold;')
-                ui.number('Weight').bind_value(item.mechanical, 'weight')
-                ui.input('Dimensions').bind_value(item.mechanical, 'dimensions')
-                ui.input('Material').bind_value(item.mechanical, 'material')
-                ui.input('Color').bind_value(item.mechanical, 'color')
-                ui.input('Finish').bind_value(item.mechanical, 'finish')
-                ui.input('Shape').bind_value(item.mechanical, 'shape')
-                ui.input('Size').bind_value(item.mechanical, 'size')
+                # Title 
+                ui.label('Datos Mecanicos').style('font-family: Magistral; font-size:1.6rem;')
+                ui.separator()
+                # Body
+                with ui.row().classes('w-full justify-between items-start h-full'):
+                    with ui.grid(columns='auto auto').classes('gap-3').style('max-width: 70%;'):
+                        ui.input('Weight').bind_value(item.mechanical, 'weight').props('readonly, borderless')
+                        ui.input('Dimensions').bind_value(item.mechanical, 'dimensions').props('readonly, borderless')
+                        ui.input('Material').bind_value(item.mechanical, 'material').props('readonly, borderless')
+                        ui.input('Color').bind_value(item.mechanical, 'color').props('readonly, borderless')
+                        ui.input('Finish').bind_value(item.mechanical, 'finish').props('readonly, borderless')
+                        ui.input('Shape').bind_value(item.mechanical, 'shape').props('readonly, borderless')
+                        ui.input('Size').bind_value(item.mechanical, 'size').props('readonly, borderless')
+                    with ui.column().classes('tems-end h-full').style('min-width: 8rem;'):
+                        ui.button('Drawings', icon='file_open').classes('w-full')
 
         # Electrical Card
         if item.available.electrical > 0:
             with ui.card().classes('w-full mx-auto p-4').bind_visibility(state, 'electrical_visible'):
-                ui.label('Electrical').style('font-weight: bold;')
-                ui.input('Voltage').bind_value(item.electrical, 'voltage')
-                ui.input('Current').bind_value(item.electrical, 'current')
-                ui.input('Frequency').bind_value(item.electrical, 'frequency')
-                ui.input('Efficiency')
+                # Title 
+                ui.label('Datos Electricos').style('font-family: Magistral; font-size:1.6rem;')
+                ui.separator()
+                # Body
+                with ui.row().classes('w-full justify-between items-start h-full'):
+                    with ui.grid(columns='auto auto').classes('gap-3').style('max-width: 70%;'):
+                        ui.input('Voltage').bind_value(item.electrical, 'voltage').props('readonly, borderless')
+                        ui.input('Current').bind_value(item.electrical, 'current').props('readonly, borderless')
+                        ui.input('Frequency').bind_value(item.electrical, 'frequency').props('readonly, borderless')
+                        ui.input('Efficiency').props('readonly, borderless')
+                    with ui.column().classes('tems-end h-full').style('min-width: 8rem;'):
+                        ui.button('Drawings', icon='file_open').classes('w-full')
+
 
         # Shipping Card
         if item.available.shipping > 0:
             with ui.card().classes('w-full mx-auto p-4').bind_visibility(state, 'shipping_visible'):
-                ui.label('Shipping').style('font-weight: bold;')
-                ui.number('Shipping Weight').bind_value(item.shipping, 'shipping_weight')
-                ui.input('Shipping Dimensions').bind_value(item.shipping, 'shipping_dimensions')
-                ui.input('Shipping Method').bind_value(item.shipping, 'shipping_method')
-                ui.number('Shipping Cost').bind_value(item.shipping, 'shipping_cost')
+                # Title 
+                ui.label('Logistica').style('font-family: Magistral; font-size:1.6rem;')
+                ui.separator()
+                # Body
+                with ui.row().classes('w-full justify-between items-start h-full'):
+                    with ui.grid(columns='auto auto').classes('gap-3').style('max-width: 70%;'):
+                        ui.number('Shipping Weight').bind_value(item.shipping, 'shipping_weight')
+                        ui.input('Shipping Dimensions').bind_value(item.shipping, 'shipping_dimensions')
+                        ui.input('Shipping Method').bind_value(item.shipping, 'shipping_method')
+                        ui.number('Shipping Cost').bind_value(item.shipping, 'shipping_cost')
+                    with ui.column().classes('tems-end h-full').style('min-width: 8rem;'):
+                        ui.button('SDS', icon='file_open').classes('w-full')
 
         # Supplier Card
         if item.available.supplier > 0:
