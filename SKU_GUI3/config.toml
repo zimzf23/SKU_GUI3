@@ -62,17 +62,37 @@ fields = [ "Manufacturer", "Name", "Number", "Description", "Ean", "Code",]
 [tables.Mechanical_data]
 name = "MechanicalData"
 schema = "dbo"
-fields = [ "Material", "Treatment", "Hardness",]
+fields = [ "Material", "Treatment", "Hardness" ]  # Already good, but add "Code" if needed for WHERE
 
 [tables.Electrical_data]
-name = "MechanicalData"
+name = "ElectricalData"  # Fixed from "MechanicalData"
 schema = "dbo"
-fields = [ "Voltage", "Intensity", "Frequency",]
+fields = [ "Voltage", "Intensity", "Frequency" ]  # Add "Code" if needed
 
 [tables.Shipping]
-name = "MechanicalData"
+name = "ShippingData"  # Fixed from "MechanicalData"
 schema = "dbo"
-fields = [ "Code", "Length", "Width", "Height", "Country", "HS",]
+fields = [ "Code", "Length", "Width", "Height", "Country", "HS" ]
+
+[tables.Supplier_data]  # New section
+name = "SupplierData"
+schema = "dbo"
+fields = [ "Supplier", "Contact", "Phone", "Email", "Address" ]  # Example; add "Code"
+
+[tables.Finance_data]  # New
+name = "FinanceData"
+schema = "dbo"
+fields = [ "Cost", "Price", "Margin", "Currency", "PaymentTerms" ]  # Add "Code"
+
+[tables.Certs_data]  # New
+name = "CertificationsData"
+schema = "dbo"
+fields = [ "Certifications", "Compliance", "Standards" ]  # Add "Code"
+
+[tables.Enviromental_data]  # New
+name = "EnviromentalData"
+schema = "dbo"
+fields = [ "CO2", "Recyclable", "Hazardous", "DisposalInstructions" ]  # Add "Code"
 
 [data.classes]
 part = 1

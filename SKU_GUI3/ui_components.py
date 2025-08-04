@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from dependencies import *
-from ui_cards import main_card
+from ui_cards import main_card, visibility_controls, content_cards
 
 def styles():
     ui.add_head_html('<style>body {background-color: GhostWhite; }</style>')
@@ -30,9 +30,11 @@ def main_layout():
         #Main Card
         main_card()
         #Ref Creator
-     
-        # Checkbox Card
-        
+            
+        # Visibility Controls
+        visibility_controls()
+        # Content Cards
+        content_cards()
         #Procedural content pages
                  
     # Right Column
