@@ -14,7 +14,10 @@ class State:
         self._supplier_visible = False
         self._finance_visible = False
         self._certs_visible = False
-        self._enviromental_visible = False  # Note: Consistent spelling as 'enviromental' from data.toml
+        self._enviromental_visible = False 
+
+        self._new_assign = True 
+        self._new_basic = False 
 
     @property
     def current_ref(self):
@@ -108,6 +111,25 @@ class State:
     def enviromental_visible(self, v: bool):
         self._enviromental_visible = v
         ui.update()
+
+    @property
+    def new_assign(self):
+        return self._new_assign
+
+    @new_assign.setter
+    def new_assign(self, v: bool):
+        self._new_assign = v
+        ui.update()
+
+    @property
+    def new_basic(self):
+        return self._new_basic
+
+    @new_basic.setter
+    def new_basic(self, v: bool):
+        self._new_basic = v
+        ui.update()
+
 
 state = State()
 

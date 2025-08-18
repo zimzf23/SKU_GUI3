@@ -26,7 +26,7 @@ def main_card():
                     ui.label().style('font-weight: bold;').bind_text(item.strings, "subcat_str") 
                     ui.label().style(f'font-weight: bold; color: blue').bind_text(item.strings, "cls_str")
                     ui.label().style(f'font-weight: bold; color: red').bind_text(item.strings, "wear_str")
-                ui.input(label='Descripción').classes('w-full').style('font-family: Muli; font-size:1rem;').bind_value(item.basic, "description")
+                ui.input(label='Descripción').classes('w-full').style('font-family: Muli; font-size:1rem;').bind_value(item.basic, "description").props('outlined stack-label')
             # Media Column
             with ui.column().classes('w-full mx-auto p-4'):
                 thumb = ui.image().bind_source(item.thumbnail,"thumbnail").style("width:12rem; height:12rem; object-fit: contain;")

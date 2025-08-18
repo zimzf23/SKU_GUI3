@@ -26,6 +26,9 @@
     <Compile Include="dependencies.py" />
     <Compile Include="encoding.py" />
     <Compile Include="file_queries.py" />
+    <Compile Include="new_flow.py" />
+    <Compile Include="new_sql.py" />
+    <Compile Include="sql_fs.py" />
     <Compile Include="state.py" />
     <Compile Include="text_queries.py" />
     <Compile Include="search_flow.py" />
@@ -33,6 +36,7 @@
     <Compile Include="transcode.py" />
     <Compile Include="ui_cards.py" />
     <Compile Include="ui_components.py" />
+    <Compile Include="ui_new.py" />
   </ItemGroup>
   <ItemGroup>
     <Interpreter Include="env\">
