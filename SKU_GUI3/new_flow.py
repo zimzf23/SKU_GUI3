@@ -1,7 +1,7 @@
 from dependencies import *
 from state import state
 from new_sql import get_level_options, get_type_options, get_cat_options, get_subcat_options, get_next_code_number, insert_new
-from sql_fs import create_folder
+from sql_fs import create_folder, insert_to_folder
 from data import catalog
 
 def get_current_item():
@@ -34,3 +34,10 @@ def upload_data():
     item = get_current_item()
     insert_new(state.current_ref, item.basic.name, item.basic.description, item.basic.cls, item.basic.wear)
     create_folder(state.current_ref, 'SKUs')
+
+def upload_file(e):
+    try:
+        stream_id = insert_to_folder(e, code=state.current_ref, forced_name="Thumbnail")
+        ui.notify(f"Photo saved in SKUs/{state.current_ref}, stream_id={stream_id}", type="positive")
+    except Exception as ex:
+        ui.notify(f'Upload failed: {ex}', type='negative')

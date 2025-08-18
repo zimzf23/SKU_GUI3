@@ -1,7 +1,7 @@
 from dependencies import *
 from new_sql import get_level_options, get_type_options, get_cat_options, get_subcat_options, get_next_code_number, insert_new
 from state import state
-from new_flow import get_next_ref, load_options, show_basic_data, upload_data, get_current_item
+from new_flow import get_next_ref, load_options, show_basic_data, upload_data, get_current_item, upload_file
 from data import catalog
 
 # Dropdown options for new reference assignment
@@ -52,7 +52,7 @@ def create_main_card():
                     desgaste = ui.select(options={1:'Estándar', 2:'Recambio', 4:'Consumible'}, label='Desgaste') .props('outlined  stack-label') .classes('w-40').bind_value(item.basic, "wear")
             # Media Column
             with ui.column().classes('w-full mx-auto p-4'):
-                ui.upload()
+                ui.upload(on_upload=upload_file, auto_upload=True, label="Upload Thumbnail")
 
 # Control card for save and discard actions
 @ui.refreshable
