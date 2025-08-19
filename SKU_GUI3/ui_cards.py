@@ -1,6 +1,7 @@
 from dependencies import *
 from state import state
 from data import catalog
+from new_sql import upsert_external, create_folder
 
 def get_current_item():
     ref = (state.current_ref or "").strip()
@@ -24,8 +25,8 @@ def main_card():
                     ui.label().style('font-weight: bold;').bind_text(item.strings, "type_str")
                     ui.label().style('font-weight: bold;').bind_text(item.strings, "cat_str") 
                     ui.label().style('font-weight: bold;').bind_text(item.strings, "subcat_str") 
-                    ui.label().style(f'font-weight: bold; color: blue').bind_text(item.strings, "cls_str")
-                    ui.label().style(f'font-weight: bold; color: red').bind_text(item.strings, "wear_str")
+                    ui.label().style(f'font-weight: bold;').bind_text(item.strings, "cls_str").classes('text-primary')
+                    ui.label().style(f'font-weight: bold;').bind_text(item.strings, "wear_str").classes('text-primary')
                 ui.input(label='Descripción').classes('w-full').style('font-family: Muli; font-size:1rem;').bind_value(item.basic, "description").props('outlined stack-label')
             # Media Column
             with ui.column().classes('w-full mx-auto p-4'):
@@ -58,26 +59,82 @@ def visibility_controls():
             if item.available.enviromental > 0:
                 ui.checkbox('Enviromental').bind_value(state, 'enviromental_visible')
 
+
+@ui.refreshable
+def external_card(owner, *, edit):
+    item = get_current_item()
+    # per-instance state (private to this call)
+    st = SimpleNamespace(edit=edit)
+
+    def recompute_props():
+        st.field_props = 'outlined stack-label ' if st.edit else 'readonly borderless '
+
+    recompute_props()  # <-- respect initial edit
+
+    def save_changes():
+        print(item.basic.ref)
+        print(item.external_manufacturer)
+        create_folder('Datos Externos', state.current_ref)
+        upsert_external(item)
+        toggle_edit()
+
+    def toggle_edit():
+            st.edit = not st.edit
+            st.field_props = 'outlined stack-label ' if st.edit else 'readonly borderless '
+            render.refresh()
+
+    @ui.refreshable
+    def render():
+
+        with ui.card().classes('w-full mx-auto p-4').bind_visibility(*owner):
+            # Title
+            with ui.row().classes('w-full justify-between items-center'):
+                ui.label('Datos fabricante').style('font-family: Magistral; font-size:1.6rem;')
+                with ui.row():
+                    if st.edit:
+                        ui.button(icon='check', on_click=save_changes).props('flat round dense color=green')
+                        ui.button(icon='close', on_click=toggle_edit).props('flat round dense color=red')
+                    else:
+                        ui.button(icon='edit', on_click=toggle_edit).props('flat round dense color=primary')
+
+            ui.separator()
+
+            # Body
+            with ui.row().classes('w-full items-start h-full'):
+                with ui.grid(columns='1fr 1fr').classes('gap-3 flex-grow'):
+                    ui.input('Fabricante').bind_value(item.external_manufacturer, 'manufacturer').props(st.field_props)
+                    ui.input('Nombre').bind_value(item.external_manufacturer, 'name').props(st.field_props)
+                    ui.input('Referencia').bind_value(item.external_manufacturer, 'number').props(st.field_props)
+                    ui.input('EAN').bind_value(item.external_manufacturer, 'ean').props(st.field_props)
+                    ta = ui.textarea(label='Descripción').bind_value(item.external_manufacturer, 'description')\
+                        .props(st.field_props).style('height: 100px; overflow-y: auto; resize: none;')
+
+                    
+                if st.edit:
+                    ui.upload(
+                    multiple=True,         # single file
+                    auto_upload=True,
+                    label='Upload Thumbnail'
+                )
+                else:
+                    with ui.column().classes('items-end h-full').style('min-width: 8rem;'):
+                        ui.button('Hoja de datos', icon='file_open').classes('w-full')
+                        ui.button('Hoja de datos', icon='file_open').classes('w-full')
+                        ui.button('Hoja de datos', icon='file_open').classes('w-full')
+                        ui.button('Hoja de datos', icon='file_open').classes('w-full')
+
+    # build immediately and return the refresh handle in case you need it later
+    render()
+    return render
+
+
 @ui.refreshable
 def content_cards():
     item = get_current_item()
     with ui.column().classes('w-full'):
         # External Card
         if item.available.external > 0:
-            with ui.card().classes('w-full mx-auto p-4').bind_visibility(state, 'external_visible'):
-                # Title 
-                ui.label('Datos fabricante').style('font-family: Magistral; font-size:1.6rem;')
-                ui.separator()
-                # Body
-                with ui.row().classes('w-full justify-between items-start h-full'):
-                    with ui.grid(columns='auto auto').classes('gap-3').style('max-width: 70%;'):
-                        ui.input('Fabricante').bind_value(item.external_manufacturer, 'manufacturer').props('readonly, borderless')
-                        ui.input('Nombre').bind_value(item.external_manufacturer, 'name').props('readonly, borderless')
-                        ui.input('Referencia').bind_value(item.external_manufacturer, 'number').props('readonly, borderless')
-                        ui.input('Descripción').bind_value(item.external_manufacturer, 'description').props('readonly, borderless')
-                        ui.input('EAN').bind_value(item.external_manufacturer, 'ean').props('readonly, borderless')
-                    with ui.column().classes('tems-end h-full').style('min-width: 8rem;'):
-                        ui.button('Hoja de datos', icon='file_open').classes('w-full')
+            external_card((state, 'external_visible'), edit=False)
 
         # Mechanical Card
         if item.available.mechanical > 0:

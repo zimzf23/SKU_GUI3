@@ -1,12 +1,14 @@
 from dependencies import *
+import pyodbc
 
-# Reactive state holder
 class State:
     def __init__(self, ref: str = "W-0X00-0000"):
+        # --- reactive runtime state ---
         self._current_ref = ref
         self._subs: list[callable] = []
-        
-        # Visibility flags for content cards (reactive)
+        self._pending_thumbnail = None
+
+        # Visibility flags
         self._external_visible = False
         self._mechanical_visible = False
         self._electrical_visible = False
@@ -14,24 +16,37 @@ class State:
         self._supplier_visible = False
         self._finance_visible = False
         self._certs_visible = False
-        self._enviromental_visible = False 
+        self._enviromental_visible = False
+        self._new_assign = True
+        self._new_basic = False
 
-        self._new_assign = True 
-        self._new_basic = False 
+        # --- database config (moved here) ---
+        server_config = config['server']
+        self.server   = f"{server_config['host']},{server_config['port']}"
+        self.database = config['tables']['main_db']
+        self.username = server_config['username']
+        self.password = server_config['password']
+        self.sku_conn_string = (
+            f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+            f"SERVER={self.server};"
+            f"DATABASE={self.database};"
+            f"UID={self.username};PWD={self.password}"
+        )
 
+    def get_connection(self):
+        """Return a fresh pyodbc connection using the current sku_conn_string."""
+        return pyodbc.connect(self.sku_conn_string)
+
+    # properties (unchanged, shortened example)
     @property
-    def current_ref(self):
-        return self._current_ref
-
+    def current_ref(self): return self._current_ref
     @current_ref.setter
     def current_ref(self, v: str):
         self._current_ref = v
         ui.update()
         for fn in self._subs:
-            try:
-                fn(v)
-            except Exception:
-                pass
+            try: fn(v)
+            except Exception: pass
 
     def subscribe(self, fn: callable):
         self._subs.append(fn)
@@ -130,17 +145,13 @@ class State:
         self._new_basic = v
         ui.update()
 
+    @property
+    def pending_thumbnail(self):
+        return self._pending_thumbnail
+
+    @pending_thumbnail.setter
+    def pending_thumbnail(self, e):
+        self._pending_thumbnail = e
+        ui.update()
 
 state = State()
-
-# Global results
-
-# Configuration
-server_config = config['server']
-
-server        = server_config['host'] + ',' + server_config['port']
-database      = config['tables']['main_db']
-username      = server_config['username']
-password      = server_config['password']
-
-sku_conn_string = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server};DATABASE={database};UID={username};PWD={password}'

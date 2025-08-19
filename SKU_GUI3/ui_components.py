@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from dependencies import *
-from ui_cards import main_card, visibility_controls, content_cards
-from ui_new import check_available, create_main_card, control_card
+from state import state
+from ui_cards import external_card, main_card, visibility_controls, content_cards
+from ui_new import new_pages, check_available, create_main_card, control_card, content_controls
 
 def styles():
     ui.add_head_html('<style>body {background-color: GhostWhite; }</style>')
@@ -107,7 +108,8 @@ def new_layout():
     with ui.column().classes('w-full'):
         check_available()
         create_main_card()
-
+        content_controls()
+        external_card((new_pages, 'external'), edit=True)
                  
     # Right Column
     with ui.right_drawer(fixed=True).props('width=400').style('background-color: GhostWhite;'):

@@ -10,6 +10,7 @@ import tomllib
 from dataclasses import make_dataclass, field, asdict
 from typing import Any
 from pathlib import Path
+from types import SimpleNamespace
 
 from nicegui import app,ui, events, binding
 from nicegui.events import ValueChangeEventArguments

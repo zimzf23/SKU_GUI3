@@ -1,5 +1,12 @@
 from dependencies import *
-import state
+from state import state
+from data import catalog
+
+def get_current_item():
+    ref = (state.current_ref or "").strip()
+    if not ref:
+        return None
+    return catalog.get_or_create(ref)
 
 def get_level_options():
     """Return {label: value} for NiceGUI where value is Level number."""
@@ -192,92 +199,130 @@ def insert_new(code: str, title: str, desc: str, clase: int, tipo: int):
 
 
 def create_folder(folder_name, parent_name=None, ensure_parent=True):
-    # Connect
+    """Ensure <root>/SKUs/<parent_name>/<folder_name> exists in the FileTable."""
     conn = pyodbc.connect(state.sku_conn_string)
     cursor = conn.cursor()
+    try:
+        database = state.database
+        table_cfg = config["tables"]["documents"]
+        tbl_name  = table_cfg["name"]
+        schema    = table_cfg["schema"]
 
-    # Table metadata
-    database = state.database
-    table_cfg = config["tables"]["documents"]
-    tbl_name  = table_cfg["name"]    # FileTable name, e.g., 'ArticleDocuments'
-    schema    = table_cfg["schema"]  # e.g., 'dbo'
+        cursor.execute(f"USE [{database}]")
 
-    # Ensure DB context for FileTableRootPath(...)
-    cursor.execute(f"USE [{database}]")
+        # Get FileTable root path_locator as string (fix -151 HY106)
+        cursor.execute(
+            f"SELECT CAST(GetPathLocator(FileTableRootPath('{schema}.{tbl_name}')).ToString() AS NVARCHAR(4000))"
+        )
+        root_loc = cursor.fetchone()[0]
 
-    root_expr = f"GetPathLocator(FileTableRootPath('{schema}.{tbl_name}'))"
+        def exists_under(parent_loc_str, name):
+            if parent_loc_str is None:  # root case
+                cursor.execute(f"""
+                    SELECT path_locator.ToString()
+                    FROM [{schema}].[{tbl_name}]
+                    WHERE is_directory = 1 AND name = ?
+                      AND (parent_path_locator IS NULL OR parent_path_locator = hierarchyid::GetRoot());
+                """, (name,))
+            else:
+                cursor.execute(f"""
+                    SELECT path_locator.ToString()
+                    FROM [{schema}].[{tbl_name}]
+                    WHERE is_directory = 1 AND name = ?
+                      AND parent_path_locator = hierarchyid::Parse(?);
+                """, (name, parent_loc_str))
+            row = cursor.fetchone()
+            return row[0] if row else None
 
-    def _exists_under(parent_locator_str, name):
-        """Return child's locator string if it exists (None=root), else None."""
-        if parent_locator_str is None:
-            # ROOT: match both NULL and explicit root locator
-            cursor.execute(f"""
-                SELECT path_locator.ToString()
-                FROM [{schema}].[{tbl_name}]
-                WHERE is_directory = 1 AND name = ?
-                  AND (parent_path_locator IS NULL OR parent_path_locator = {root_expr});
-            """, name)
-        else:
-            cursor.execute(f"""
-                SELECT path_locator.ToString()
-                FROM [{schema}].[{tbl_name}]
-                WHERE is_directory = 1 AND name = ?
-                  AND parent_path_locator = hierarchyid::Parse(?);
-            """, (name, parent_locator_str))
-        row = cursor.fetchone()
-        return row[0] if row else None
 
-    def _insert_under(parent_locator_str, name):
-        """Create folder under given parent (None=root); return locator string."""
-        if parent_locator_str is None:
-            # ROOT insert
-            cursor.execute(f"""
-                DECLARE @parent hierarchyid = hierarchyid::GetRoot();
-                DECLARE @lastChild hierarchyid =
-                    (SELECT MAX(path_locator)
-                     FROM [{schema}].[{tbl_name}]
-                     WHERE parent_path_locator = @parent OR parent_path_locator IS NULL);
-
-                DECLARE @new hierarchyid = @parent.GetDescendant(@lastChild, NULL);
-
-                INSERT INTO [{schema}].[{tbl_name}] (name, is_directory, file_stream, path_locator)
-                OUTPUT inserted.path_locator.ToString()
-                VALUES (?, 1, NULL, @new);
-            """, name)
-        else:
-            # Non-root insert
+        def insert_under(parent_loc_str, name):
+            parent = root_loc if parent_loc_str is None else parent_loc_str
             cursor.execute(f"""
                 DECLARE @parent hierarchyid = hierarchyid::Parse(?);
                 DECLARE @lastChild hierarchyid =
                     (SELECT MAX(path_locator)
-                     FROM [{schema}].[{tbl_name}]
-                     WHERE parent_path_locator = @parent);
-
+                       FROM [{schema}].[{tbl_name}]
+                      WHERE parent_path_locator = @parent);
                 DECLARE @new hierarchyid = @parent.GetDescendant(@lastChild, NULL);
-
                 INSERT INTO [{schema}].[{tbl_name}] (name, is_directory, file_stream, path_locator)
                 OUTPUT inserted.path_locator.ToString()
                 VALUES (?, 1, NULL, @new);
-            """, (parent_locator_str, name))
-        row = cursor.fetchone()
-        return row[0] if row else None
+            """, (parent, name))
+            return cursor.fetchone()[0]
 
-    # -------- ensure parent (get locator string) --------
-    if parent_name is None:
-        parent_loc_str = None  # root
-    else:
-        parent_loc_str = _exists_under(None, parent_name)
-        if not parent_loc_str:
-            if not ensure_parent:
-                cursor.close(); conn.close()
-                raise ValueError(f"Parent folder '{parent_name}' not found at root.")
-            parent_loc_str = _insert_under(None, parent_name)
+        # Chain: SKUs → parent_name (e.g. Code) → folder_name (Datos Externos)
+        current = None
+        for segment in ('SKUs', parent_name, folder_name):
+            loc = exists_under(current, segment)
+            if not loc:
+                loc = insert_under(current, segment)
+            current = loc
 
-    # -------- ensure child under parent --------
-    child_loc_str = _exists_under(parent_loc_str, folder_name)
-    if not child_loc_str:
-        child_loc_str = _insert_under(parent_loc_str, folder_name)
+        conn.commit()
+        return current
 
-    conn.commit()
-    cursor.close()
-    conn.close()
+    finally:
+        try:
+            cursor.close(); conn.close()
+        except:
+            pass
+
+
+def upsert_external(item):
+    """Update existing row by Code; insert if it doesn't exist."""
+    # Connect
+    conn = pyodbc.connect(state.sku_conn_string)
+    cursor = conn.cursor()
+
+    try:
+        table_cfg = config["tables"]["ExternalManufacturer_data"]
+        tbl_name = table_cfg["name"]
+        schema   = table_cfg["schema"]
+        cols     = table_cfg["fields"]          # ["Manufacturer","Name","Number","Description","Ean","Code"]
+        code_col = cols[-1]
+        set_cols = [c for c in cols if c != code_col]
+
+        man = (item.external_manufacturer.manufacturer or '').strip() or None
+        name = (item.external_manufacturer.name or '').strip() or None
+        number = (item.external_manufacturer.number or '').strip() or None
+        desc = (item.external_manufacturer.description or '').strip() or None
+        ref_val = (state.current_ref or "").strip()
+        ean_raw = item.external_manufacturer.ean
+        try:
+            ean = int(ean_raw) if str(ean_raw).strip() != '' else None
+        except (TypeError, ValueError):
+            ean = None
+
+        values_by_col = {
+            "Manufacturer": man,
+            "Name": name,
+            "Number": number,
+            "Description": desc,
+            "Ean": ean,
+            code_col: ref_val,
+        }
+
+        # 1) Try UPDATE
+        upd_sql = (
+            f"UPDATE [{state.database}].[{schema}].[{tbl_name}] SET "
+            + ", ".join(f"[{c}] = ?" for c in set_cols)
+            + f" WHERE [{code_col}] = ?"
+        )
+        upd_params = [values_by_col[c] for c in set_cols] + [ref_val]
+        cursor.execute(upd_sql, upd_params)
+
+        # 2) If no row updated, INSERT
+        if cursor.rowcount == 0:
+            col_list = ", ".join(f"[{c}]" for c in cols)
+            placeholders = ", ".join("?" for _ in cols)
+            ins_sql = f"INSERT INTO [{state.database}].[{schema}].[{tbl_name}] ({col_list}) VALUES ({placeholders})"
+            ins_params = [values_by_col[c] for c in cols]
+            cursor.execute(ins_sql, ins_params)
+
+        conn.commit()
+        return True
+
+    except pyodbc.Error as e:
+        conn.rollback()
+        print(f"Error upserting external data: {e}")
+        return False

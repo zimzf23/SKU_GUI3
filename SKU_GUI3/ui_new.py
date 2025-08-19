@@ -1,14 +1,29 @@
 from dependencies import *
-from new_sql import get_level_options, get_type_options, get_cat_options, get_subcat_options, get_next_code_number, insert_new
+from new_sql import get_level_options, get_type_options, get_cat_options, get_subcat_options, get_next_code_number
 from state import state
-from new_flow import get_next_ref, load_options, show_basic_data, upload_data, get_current_item, upload_file
+from new_flow import get_next_ref, load_options, show_basic_data, upload_data, get_current_item, cache_thumbnail
 from data import catalog
+
+class NewPages:
+    def __init__(self):
+        self.external = False
+        self.mechanical = False
+        self.electrical = False
+        self.shipping = False
+        self.supplier = False
+        self.finance = False
+        self.certs = False
+        self.enviromental = False
+
+new_pages = NewPages()
+
+state.subscribe(lambda new_ref: create_main_card.refresh())
 
 # Dropdown options for new reference assignment
 @ui.refreshable
 def check_available():
     with ui.card().classes('w-full mx-auto p-4').bind_visibility_from(state, 'new_assign'):
-        ui.label('Asignar Referencia').style('font-family: Magistral; font-size:1.6rem;')
+        ui.label('Asignar referencia').style('font-family: Magistral; font-size:1.6rem;')
         ui.separator()
         with ui.row().classes('w-full justify-center').style('align-items: flex-end; font-family: Muli;'):
             s_level = ui.select(options={}, label='Nivel') .props('outlined dense stack-label') .classes('w-40')
@@ -38,7 +53,7 @@ def create_main_card():
     item = get_current_item()
 
     with ui.card().classes('w-full mx-auto  p-4').bind_visibility_from(state, 'new_basic'):
-        ui.label('Datos Básicos').style('font-family: Magistral; font-size:1.6rem;')
+        ui.label('Datos básicos').style('font-family: Magistral; font-size:1.6rem;')
         ui.separator()
         with ui.grid(columns='1fr 0.3fr').classes('w-full'):
       
@@ -52,7 +67,12 @@ def create_main_card():
                     desgaste = ui.select(options={1:'Estándar', 2:'Recambio', 4:'Consumible'}, label='Desgaste') .props('outlined  stack-label') .classes('w-40').bind_value(item.basic, "wear")
             # Media Column
             with ui.column().classes('w-full mx-auto p-4'):
-                ui.upload(on_upload=upload_file, auto_upload=True, label="Upload Thumbnail")
+                ui.upload(
+                    on_upload=cache_thumbnail,
+                    multiple=False,         # single file
+                    auto_upload=True,
+                    label='Upload Thumbnail'
+                )
 
 # Control card for save and discard actions
 @ui.refreshable
@@ -63,5 +83,23 @@ def control_card():
             ui.button('Guardar',icon="edit", on_click=upload_data).props('color=green')
             ui.button('Descartar',icon='delete').props('color=red')
 
+@ui.refreshable
+def content_controls():
 
-state.subscribe(lambda new_ref: create_main_card.refresh())
+    item = get_current_item()
+    if not item:
+        return
+    with ui.card().classes('w-full mx-auto p-4').bind_visibility_from(state, 'new_basic'):
+        # Title 
+        ui.label('Páginas').style('font-family: Magistral; font-size:1.6rem;')
+        ui.separator()
+        with ui.row().classes('w-full'):
+            ui.checkbox('External').bind_value(new_pages, 'external')
+            ui.checkbox('Mechanical').bind_value(new_pages, 'mechanical')
+            ui.checkbox('Electrical').bind_value(new_pages, 'electrical')
+            ui.checkbox('Shipping').bind_value(new_pages, 'shipping')
+            ui.checkbox('Supplier').bind_value(new_pages, 'supplier')
+            ui.checkbox('Finance').bind_value(new_pages, 'finance')
+            ui.checkbox('Certs').bind_value(new_pages, 'certs')
+            ui.checkbox('Enviromental').bind_value(new_pages, 'enviromental')
+

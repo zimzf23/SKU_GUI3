@@ -34,10 +34,26 @@ def upload_data():
     item = get_current_item()
     insert_new(state.current_ref, item.basic.name, item.basic.description, item.basic.cls, item.basic.wear)
     create_folder(state.current_ref, 'SKUs')
+    upload_cached_thumb()
 
-def upload_file(e):
-    try:
-        stream_id = insert_to_folder(e, code=state.current_ref, forced_name="Thumbnail")
-        ui.notify(f"Photo saved in SKUs/{state.current_ref}, stream_id={stream_id}", type="positive")
-    except Exception as ex:
-        ui.notify(f'Upload failed: {ex}', type='negative')
+
+def cache_thumbnail(e):
+    state.pending_thumbnail = e           # stage it (replaces previous if any)
+    ui.notify(f'Staged: {e.name}', type='positive')
+
+def upload_cached_thumb():
+    e = state.pending_thumbnail
+    if e:
+        _, ext = os.path.splitext(e.name)
+        ext = ext.lstrip('.').lower() or 'jpg'
+        stream_id = insert_to_folder(
+            e,
+            code=state.current_ref,
+            forced_name='Thumbnail',  # keeps the original extension
+        )
+        ui.notify(f'Saved SKUs/{state.current_ref}/Thumbnail.{ext} (stream_id={stream_id})',
+                  type='positive')
+        state.pending_thumbnail = None
+    else:
+        ui.notify('No thumbnail staged', type='warning')
+

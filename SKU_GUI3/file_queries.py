@@ -1,5 +1,5 @@
 from dependencies import *
-import state
+from state import state
 
 def get_thumbnail(ref_val):
     conn = pyodbc.connect(state.sku_conn_string)

@@ -1,6 +1,5 @@
 from dependencies import *
 from state import state
-import state
 CHUNK_SIZE = 2 * 1024 * 1024  # 2 MiB chunks (tune as you like)
 
 def create_folder(folder_name, parent_name=None, ensure_parent=True):

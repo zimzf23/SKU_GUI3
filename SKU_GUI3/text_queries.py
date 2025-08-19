@@ -1,5 +1,5 @@
 from dependencies import *
-import state
+from state import state
 from data import catalog
 
 def search(ref_value):
@@ -120,10 +120,6 @@ def get_level_text(dec_vals):
     if result[0] is None: return None
     #print(str(result[0]))
     return result[0]
-
-from dependencies import *
-import state
-from data import catalog
 
 def search(ref_value):
     # Connect
