@@ -197,7 +197,6 @@ def insert_new(code: str, title: str, desc: str, clase: int, tipo: int):
         cur.close()
         conn.close()
 
-
 def create_folder(folder_name, parent_name=None, ensure_parent=True):
     """Ensure <root>/SKUs/<parent_name>/<folder_name> exists in the FileTable."""
     conn = pyodbc.connect(state.sku_conn_string)
@@ -266,7 +265,6 @@ def create_folder(folder_name, parent_name=None, ensure_parent=True):
             cursor.close(); conn.close()
         except:
             pass
-
 
 def upsert_external(item):
     """Update existing row by Code; insert if it doesn't exist."""

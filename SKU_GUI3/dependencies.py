@@ -11,6 +11,7 @@ from dataclasses import make_dataclass, field, asdict
 from typing import Any
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Callable, Optional, Dict, List, Any
 
 from nicegui import app,ui, events, binding
 from nicegui.events import ValueChangeEventArguments

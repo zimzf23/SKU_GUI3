@@ -1,8 +1,9 @@
 from dependencies import *
 from new_sql import get_level_options, get_type_options, get_cat_options, get_subcat_options, get_next_code_number
 from state import state
-from new_flow import get_next_ref, load_options, show_basic_data, upload_data, get_current_item, cache_thumbnail
+from new_flow import get_next_ref, load_options, show_basic_data, upload_data, get_current_item
 from data import catalog
+from sql_fs import create_folder, insert_to_folder, commit_uploads, cache_upload
 
 class NewPages:
     def __init__(self):
@@ -68,10 +69,10 @@ def create_main_card():
             # Media Column
             with ui.column().classes('w-full mx-auto p-4'):
                 ui.upload(
-                    on_upload=cache_thumbnail,
-                    multiple=False,         # single file
+                    label='Upload Thumbnail',
+                    multiple=False,
                     auto_upload=True,
-                    label='Upload Thumbnail'
+                    on_upload=lambda e: cache_upload(e, kind="thumbnail")
                 )
 
 # Control card for save and discard actions

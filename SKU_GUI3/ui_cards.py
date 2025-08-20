@@ -2,6 +2,7 @@ from dependencies import *
 from state import state
 from data import catalog
 from new_sql import upsert_external, create_folder
+from sql_fs import create_folder, insert_to_folder, commit_uploads, cache_upload
 
 def get_current_item():
     ref = (state.current_ref or "").strip()
@@ -65,27 +66,26 @@ def external_card(owner, *, edit):
     item = get_current_item()
     # per-instance state (private to this call)
     st = SimpleNamespace(edit=edit)
-
     def recompute_props():
         st.field_props = 'outlined stack-label ' if st.edit else 'readonly borderless '
-
     recompute_props()  # <-- respect initial edit
-
     def save_changes():
         print(item.basic.ref)
         print(item.external_manufacturer)
-        create_folder('Datos Externos', state.current_ref)
+        create_folder("SKUs", state.current_ref, "Datos Externos")
         upsert_external(item)
+        commit_uploads(kind="external",
+                       subfolder="Datos Externos",
+                       )
         toggle_edit()
+        render.refresh()
 
     def toggle_edit():
             st.edit = not st.edit
             st.field_props = 'outlined stack-label ' if st.edit else 'readonly borderless '
             render.refresh()
-
     @ui.refreshable
     def render():
-
         with ui.card().classes('w-full mx-auto p-4').bind_visibility(*owner):
             # Title
             with ui.row().classes('w-full justify-between items-center'):
@@ -96,9 +96,7 @@ def external_card(owner, *, edit):
                         ui.button(icon='close', on_click=toggle_edit).props('flat round dense color=red')
                     else:
                         ui.button(icon='edit', on_click=toggle_edit).props('flat round dense color=primary')
-
             ui.separator()
-
             # Body
             with ui.row().classes('w-full items-start h-full'):
                 with ui.grid(columns='1fr 1fr').classes('gap-3 flex-grow'):
@@ -108,21 +106,18 @@ def external_card(owner, *, edit):
                     ui.input('EAN').bind_value(item.external_manufacturer, 'ean').props(st.field_props)
                     ta = ui.textarea(label='Descripción').bind_value(item.external_manufacturer, 'description')\
                         .props(st.field_props).style('height: 100px; overflow-y: auto; resize: none;')
-
-                    
                 if st.edit:
                     ui.upload(
-                    multiple=True,         # single file
-                    auto_upload=True,
-                    label='Upload Thumbnail'
-                )
+                        label='Upload Datos Externos',
+                        multiple=True,
+                        auto_upload=True,
+                        on_upload=lambda e: cache_upload(e, kind="external"))
                 else:
                     with ui.column().classes('items-end h-full').style('min-width: 8rem;'):
                         ui.button('Hoja de datos', icon='file_open').classes('w-full')
                         ui.button('Hoja de datos', icon='file_open').classes('w-full')
                         ui.button('Hoja de datos', icon='file_open').classes('w-full')
                         ui.button('Hoja de datos', icon='file_open').classes('w-full')
-
     # build immediately and return the refresh handle in case you need it later
     render()
     return render
