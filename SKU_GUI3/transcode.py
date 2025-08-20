@@ -19,7 +19,16 @@ def decode_ref(ref_value):
 def decode_cls_wear(ref_value):
     target = catalog.get_or_create(ref_value)
     class_cfg = config["data"]["classes"]
-    if target.basic.cls == 4 :
+    if target.basic.cls == 1:
+        target.strings.cls_str = 'Pieza'
+    elif target.basic.cls == 2:
+        target.strings.cls_str = 'Kit'
+    elif target.basic.cls == 4:
         target.strings.cls_str = 'Externa'
-    if target.basic.wear == 0 :
+    # Similarly for wear
+    if target.basic.wear == 1:
+        target.strings.wear_str = 'Estándar'
+    elif target.basic.wear == 2:
         target.strings.wear_str = 'Recambio'
+    elif target.basic.wear == 4:
+        target.strings.wear_str = 'Consumible'
