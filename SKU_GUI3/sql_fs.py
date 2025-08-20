@@ -1,210 +1,149 @@
 from dependencies import *
 from state import state
-CHUNK_SIZE = 2 * 1024 * 1024  # 2 MiB chunks (tune as you like)
 
-def _use_db(cur) -> None:
-    cur.execute(f"USE [{state.database}]")
-
-def _get_filetable_root(cur, schema: str, tbl: str) -> str:
-    """Return FileTable root locator as string (hierarchyid.ToString())."""
-    cur.execute(
-        f"SELECT CAST(GetPathLocator(FileTableRootPath('{schema}.{tbl}')).ToString() AS NVARCHAR(4000))"
+def insert_dummy():
+    insert_file_under_code(
+        state.sku_conn_string,
+        code="W-0E21-0001",
+        file_name="test.txt",
+        data=b"Hello FileTable! xd",
+        overwrite=True
     )
-    return cur.fetchone()[0]  # e.g. '/1/'
 
-def _ensure_folder_under(cur, schema: str, tbl: str, parent_loc: str, name: str) -> str:
-    """
-    Ensure a directory named `name` exists directly under `parent_loc` (hierarchyid string).
-    Returns child's locator string.
-    """
-    # Exists?
-    cur.execute(f"""
-        SELECT path_locator.ToString()
-        FROM [{schema}].[{tbl}]
-        WHERE is_directory = 1
-          AND name = ?
-          AND parent_path_locator = hierarchyid::Parse(?);
-    """, (name, parent_loc))
-    row = cur.fetchone()
-    if row:
-        return row[0]
+    insert_file_under_code(
+        state.sku_conn_string,
+        code="W-0E21-0001",
+        file_name="manual.pdf",
+        data=b"...bytes...",
+        folder="Datos Externos",      # <-- here
+)
 
-    # Create
-    cur.execute(f"""
-        DECLARE @parent hierarchyid = hierarchyid::Parse(?);
-        DECLARE @last   hierarchyid =
-            (SELECT MAX(path_locator) FROM [{schema}].[{tbl}] WHERE parent_path_locator = @parent);
-        DECLARE @new    hierarchyid = @parent.GetDescendant(@last, NULL);
+DOCS   = config["tables"]["documents"]
+SCHEMA = DOCS["schema"]          # 'dbo'
+TABLE  = DOCS["name"]            # 'ArticleDocuments'
+F      = DOCS["fields"]
 
-        INSERT INTO [{schema}].[{tbl}] (name, is_directory, file_stream, path_locator)
-        OUTPUT inserted.path_locator.ToString()
-        VALUES (?, 1, 0x, @new);
-    """, (parent_loc, name))
-    return cur.fetchone()[0]
+COL_NAME  = F[2]   # name
+COL_PL    = F[3]   # path_locator (hierarchyid)
+COL_PPL   = F[4]   # parent_path_locator (computed)
+COL_FILE  = F[1]   # file_stream
+COL_ISDIR = F[10]  # is_directory
 
-def _ensure_path(cur, schema: str, tbl: str, segments: List[str]) -> str:
-    """
-    Ensure nested folders under FileTable root given by `segments`.
-    segments[0] is created under FileTable root; subsequent segments under their parent.
-    Returns locator string of the deepest segment.
-    """
-    root = _get_filetable_root(cur, schema, tbl)
-    parent = root
-    for seg in segments:
-        parent = _ensure_folder_under(cur, schema, tbl, parent, seg)
-    return parent  # locator of deepest folder
 
-def _iter_files(e) -> List[Any]:
-    files = getattr(e, "files", None)
-    return list(files) if files is not None else [e]
-
-def cache_upload(e, *, kind: str = "external") -> None:
-    staged: Dict[str, List[Any]] = getattr(state, "pending_uploads", {})
-    files = _iter_files(e)
-    if kind == "thumbnail":
-        last = files[-1]
-        staged[kind] = [last]
-        ui.notify(f"Staged {kind}: {last.name}", type="positive")
-    else:
-        bucket = staged.setdefault(kind, [])
-        bucket.extend(files)
-        ui.notify(f"Staged {kind}: {', '.join(f.name for f in files)}", type="positive")
-    state.pending_uploads = staged
-
-def commit_uploads(*,
-                   kind: str = "external",
-                   forced_name: Optional[str] = None,
-                   subfolder: Optional[str] = None) -> tuple[int, int]:
-    """
-    Commit staged uploads for `kind`.
-    Returns (successes, failures).
-    """
-    staged: Dict[str, List[Any]] = getattr(state, "pending_uploads", {})
-    files = staged.get(kind, [])
-    if not files:
-        return (0, 0)
-
-    successes = 0
-    failures = 0
-
-    for ev in files:
-        try:
-            fn = forced_name
-            if forced_name and "." not in forced_name:
-                _, ext = os.path.splitext(ev.name)
-                ext = ext.lstrip(".").lower() or "jpg"
-                fn = f"{forced_name}.{ext}"
-            insert_to_folder(ev, code=state.current_ref, forced_name=fn, subfolder=subfolder)
-            successes += 1
-        except Exception as ex:
-            failures += 1
-            try:
-                ui.notify(f"Failed {kind}: {ev.name} → {ex}", type="negative")
-            except:
-                pass
-
-    staged[kind] = []
-    state.pending_uploads = staged
-    return (successes, failures)
-
-def create_folder(*segments: str) -> str:
-    """
-    Ensure a nested path exists under the FileTable root.
-    Example:
-        create_folder("SKUs", "W-0E21-0002", "Datos Externos")
-    Will ensure:
-        <FileTableRoot>/SKUs/W-0E21-0002/Datos Externos
-    Returns locator string of the deepest folder.
-    """
-    conn = pyodbc.connect(state.sku_conn_string)
+def _folder_locator_under(conn, parent_pl_bin: bytes | None, child_name: str) -> bytes | None:
+    """Return child's path_locator (VARBINARY) under parent (None => root)."""
     cur = conn.cursor()
-    try:
-        _use_db(cur)  # switch to correct DB
-        tbl_cfg = config["tables"]["documents"]
-        schema  = tbl_cfg["schema"]
-        tbl     = tbl_cfg["name"]
-
-        return _ensure_path(cur, schema, tbl, list(segments))
-    finally:
-        try: cur.close(); conn.close()
-        except: pass
-
-def insert_to_folder(upload_event,
-                     code: str,
-                     forced_name: Optional[str] = None,
-                     subfolder: Optional[str] = None) -> str:
-    """
-    Write file to <FileTableRoot> / SKUs / <code> [/ <subfolder>] / <final_name>.
-    Overwrites if a file with the same name exists.
-    Returns stream_id (as string).
-    """
-    upload_ext = Path(upload_event.name).suffix.lstrip('.').lower()
-    if forced_name is None:
-        final_name = upload_event.name
+    if parent_pl_bin is None:
+        sql = f"""
+            SELECT CONVERT(varbinary(892), [{COL_PL}])
+            FROM [{SCHEMA}].[{TABLE}]
+            WHERE [{COL_NAME}] = ? AND [{COL_ISDIR}] = 1 AND [{COL_PPL}] IS NULL
+        """
+        row = cur.execute(sql, (child_name,)).fetchone()
     else:
-        fext = Path(forced_name).suffix.lstrip('.').lower()
-        final_name = forced_name if fext else (f"{forced_name}.{upload_ext}" if upload_ext else forced_name)
+        sql = f"""
+            SELECT CONVERT(varbinary(892), [{COL_PL}])
+            FROM [{SCHEMA}].[{TABLE}]
+            WHERE [{COL_NAME}] = ?
+              AND [{COL_ISDIR}] = 1
+              AND [{COL_PPL}] = CAST(CAST(? AS varbinary(max)) AS hierarchyid)
+        """
+        row = cur.execute(sql, (child_name, pyodbc.Binary(parent_pl_bin))).fetchone()
+    cur.close()
+    return row[0] if row else None
 
-    content_bytes = upload_event.content.read()
+def _ensure_folder_under(conn, parent_pl_bin: bytes | None, folder_name: str) -> bytes:
+    """Ensure a folder exists with given name under parent; create if missing."""
+    existing = _folder_locator_under(conn, parent_pl_bin, folder_name)
+    if existing:
+        return existing
 
-    conn = pyodbc.connect(state.sku_conn_string)
     cur = conn.cursor()
+    if parent_pl_bin is None:
+        sql = f"""
+                DECLARE @parent hierarchyid = hierarchyid::GetRoot();
+                DECLARE @new    hierarchyid = @parent.GetDescendant(
+                  (SELECT MAX([{COL_PL}]) FROM [{SCHEMA}].[{TABLE}] WHERE [{COL_PPL}] = @parent),
+                  NULL
+                );
+                INSERT INTO [{SCHEMA}].[{TABLE}] ([{COL_NAME}], [{COL_ISDIR}], [{COL_FILE}], [{COL_PL}])
+                OUTPUT CONVERT(varbinary(892), inserted.[{COL_PL}])
+                VALUES (?, 1, NULL, @new);
+                """
+        row = cur.execute(sql, (folder_name,)).fetchone()
+    else:
+        sql = f"""
+                DECLARE @parent hierarchyid = CAST(CAST(? AS varbinary(max)) AS hierarchyid);
+                DECLARE @new    hierarchyid = @parent.GetDescendant(
+                  (SELECT MAX([{COL_PL}]) FROM [{SCHEMA}].[{TABLE}] WHERE [{COL_PPL}] = @parent),
+                  NULL
+                );
+                INSERT INTO [{SCHEMA}].[{TABLE}] ([{COL_NAME}], [{COL_ISDIR}], [{COL_FILE}], [{COL_PL}])
+                OUTPUT CONVERT(varbinary(892), inserted.[{COL_PL}])
+                VALUES (?, 1, NULL, @new);
+                """
+        row = cur.execute(sql, (pyodbc.Binary(parent_pl_bin), folder_name)).fetchone()
+
+    pl_bin = row[0]
+    cur.close()
+    conn.commit()
+    return pl_bin
+
+def insert_file_under_code(
+    conn_string: str,
+    code: str,
+    file_name: str,
+    data: bytes,
+    folder: str | None = None,
+    overwrite: bool = False,
+):
+    """
+    Insert a file into \\SKUs\\<code>\\[<folder>].
+
+    - If folder is None or "", the file is placed directly under \\SKUs\\<code>\\.
+    - Ensures <code> (and <folder>, if given) exist. SKUs is assumed to exist at root.
+    - If overwrite=True and a file with the same name exists, it is removed first.
+    """
+    conn = pyodbc.connect(conn_string)
     try:
-        _use_db(cur)
-        tbl_cfg = config["tables"]["documents"]
-        schema  = tbl_cfg["schema"]
-        tbl     = tbl_cfg["name"]
+        # 1) SKUs under root
+        skus_pl = _folder_locator_under(conn, None, "SKUs")
+        if not skus_pl:
+            raise FileNotFoundError(r"Missing folder: \\SKUs\\")
 
-        # Ensure path: SKUs / code [/ subfolder]
-        path_segments = ["SKUs", code] + ([subfolder] if subfolder else [])
-        parent_loc = _ensure_path(cur, schema, tbl, path_segments)
+        # 2) ensure <code>
+        code_pl = _ensure_folder_under(conn, skus_pl, code)
 
-        # If a FOLDER with same name exists under parent → error out clearly
-        cur.execute(f"""
-            SELECT is_directory
-            FROM [{schema}].[{tbl}]
-            WHERE name = ? AND parent_path_locator = hierarchyid::Parse(?);
-        """, (final_name, parent_loc))
-        r = cur.fetchone()
-        if r and r[0] == 1:
-            raise ValueError(f"'{final_name}' already exists as a folder under the target path.")
+        # 3) resolve target (code folder or subfolder)
+        target_pl = code_pl
+        if folder and folder.strip():
+            target_pl = _ensure_folder_under(conn, code_pl, folder.strip())
 
-        # Overwrite if file exists
-        cur.execute(f"""
-            SELECT stream_id
-            FROM [{schema}].[{tbl}]
-            WHERE is_directory = 0
-              AND name = ?
-              AND parent_path_locator = hierarchyid::Parse(?);
-        """, (final_name, parent_loc))
-        row = cur.fetchone()
+        cur = conn.cursor()
 
-        if row:
-            stream_id = str(row[0])
-            cur.setinputsizes([(pyodbc.SQL_VARBINARY, 0, 0), (pyodbc.SQL_GUID, 0, 0)])
-            cur.execute(f"""
-                UPDATE [{schema}].[{tbl}]
-                SET file_stream = ?
-                WHERE stream_id = ?;
-            """, (pyodbc.Binary(content_bytes), stream_id))
-        else:
-            # New file under parent
-            cur.execute(f"""
-                DECLARE @parent hierarchyid = hierarchyid::Parse(?);
-                DECLARE @last   hierarchyid =
-                    (SELECT MAX(path_locator)
-                       FROM [{schema}].[{tbl}]
-                      WHERE parent_path_locator = @parent);
-                DECLARE @new    hierarchyid = @parent.GetDescendant(@last, NULL);
+        # 4) if overwrite: delete existing file with same name under target folder
+        if overwrite:
+            sql_del = f"""
+                        DELETE FROM [{SCHEMA}].[{TABLE}]
+                        WHERE [{COL_NAME}] = ?
+                          AND [{COL_ISDIR}] = 0
+                          AND [{COL_PPL}] = CAST(CAST(? AS varbinary(max)) AS hierarchyid);
+                        """
+            cur.execute(sql_del, (file_name, pyodbc.Binary(target_pl)))
+            conn.commit()
 
-                INSERT INTO [{schema}].[{tbl}] (name, is_directory, file_stream, path_locator)
-                OUTPUT inserted.stream_id
-                VALUES (?, 0, ?, @new);
-            """, (parent_loc, final_name, pyodbc.Binary(content_bytes)))
-            stream_id = str(cur.fetchone()[0])
-
+        # 5) insert file
+        sql_ins = f"""
+                    DECLARE @parent hierarchyid = CAST(CAST(? AS varbinary(max)) AS hierarchyid);
+                    DECLARE @new    hierarchyid = @parent.GetDescendant(
+                      (SELECT MAX([{COL_PL}]) FROM [{SCHEMA}].[{TABLE}] WHERE [{COL_PPL}] = @parent),
+                      NULL
+                    );
+                    INSERT INTO [{SCHEMA}].[{TABLE}] ([{COL_NAME}], [{COL_FILE}], [{COL_ISDIR}], [{COL_PL}])
+                    VALUES (?, ?, 0, @new);
+                    """
+        cur.execute(sql_ins, (pyodbc.Binary(target_pl), file_name, pyodbc.Binary(data)))
         conn.commit()
-        return stream_id
+        cur.close()
     finally:
-        try: cur.close(); conn.close()
-        except: pass
+        conn.close()

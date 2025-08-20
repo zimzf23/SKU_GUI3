@@ -1,9 +1,8 @@
 from dependencies import *
 from new_sql import get_level_options, get_type_options, get_cat_options, get_subcat_options, get_next_code_number
 from state import state
-from new_flow import get_next_ref, load_options, show_basic_data, upload_data, get_current_item
+from new_flow import get_next_ref, load_options, show_basic_data, get_current_item
 from data import catalog
-from sql_fs import create_folder, insert_to_folder, commit_uploads, cache_upload
 
 class NewPages:
     def __init__(self):
@@ -72,7 +71,7 @@ def create_main_card():
                     label='Upload Thumbnail',
                     multiple=False,
                     auto_upload=True,
-                    on_upload=lambda e: cache_upload(e, kind="thumbnail")
+                   
                 )
 
 # Control card for save and discard actions
@@ -81,7 +80,7 @@ def control_card():
     #Save and discard changes
     with ui.card().classes('w-full justify-center').style('align-items: center; font-family: Muli;'):
         with ui.row():
-            ui.button('Guardar',icon="edit", on_click=upload_data).props('color=green')
+            ui.button('Guardar',icon="edit").props('color=green')
             ui.button('Descartar',icon='delete').props('color=red')
 
 @ui.refreshable

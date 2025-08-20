@@ -1,7 +1,6 @@
 from dependencies import *
 from state import state
 from new_sql import get_level_options, get_type_options, get_cat_options, get_subcat_options, get_next_code_number, insert_new
-from sql_fs import create_folder, insert_to_folder, commit_uploads, cache_upload
 from data import catalog
 
 def get_current_item():
@@ -30,11 +29,6 @@ def show_basic_data():
     else:
         state.new_basic = True
 
-def upload_data():
-    item = get_current_item()
-    insert_new(state.current_ref, item.basic.name, item.basic.description, item.basic.cls, item.basic.wear)
-    create_folder("SKUs", state.current_ref)
-    commit_uploads(kind="thumbnail",forced_name="Thumbnail",subfolder=None)  # root of SKU
 
 
 

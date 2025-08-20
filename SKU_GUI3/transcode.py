@@ -27,7 +27,7 @@ def decode_cls_wear(ref_value):
         target.strings.cls_str = 'Externa'
     # Similarly for wear
     if target.basic.wear == 1:
-        target.strings.wear_str = 'Est·ndar'
+        target.strings.wear_str = 'Est√°ndar'
     elif target.basic.wear == 2:
         target.strings.wear_str = 'Recambio'
     elif target.basic.wear == 4:

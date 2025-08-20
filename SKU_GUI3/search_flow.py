@@ -39,4 +39,14 @@ def lookup_get_thumbnail(ref_val, item):
 def look_content(ref_val,item):
     #Check content
     get_available_data(ref_val,item)
+    # In search_flow.py, inside look_content(ref_val, item):
+    # Auto-enable visibility for available sections
+    state.external_visible = item.available.external > 0
+    state.mechanical_visible = item.available.mechanical > 0
+    state.electrical_visible = item.available.electrical > 0
+    state.shipping_visible = item.available.shipping > 0
+    state.supplier_visible = item.available.supplier > 0
+    state.finance_visible = item.available.finance > 0
+    state.certs_visible = item.available.certs > 0
+    state.enviromental_visible = item.available.enviromental > 0
     print(item)

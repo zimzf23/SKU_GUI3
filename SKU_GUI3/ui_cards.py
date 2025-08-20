@@ -2,7 +2,7 @@ from dependencies import *
 from state import state
 from data import catalog
 from new_sql import upsert_external, create_folder
-from sql_fs import create_folder, insert_to_folder, commit_uploads, cache_upload
+from sql_fs import insert_dummy
 
 def get_current_item():
     ref = (state.current_ref or "").strip()
@@ -70,13 +70,7 @@ def external_card(owner, *, edit):
         st.field_props = 'outlined stack-label ' if st.edit else 'readonly borderless '
     recompute_props()  # <-- respect initial edit
     def save_changes():
-        print(item.basic.ref)
-        print(item.external_manufacturer)
-        create_folder("SKUs", state.current_ref, "Datos Externos")
-        upsert_external(item)
-        commit_uploads(kind="external",
-                       subfolder="Datos Externos",
-                       )
+        insert_dummy()
         toggle_edit()
         render.refresh()
 

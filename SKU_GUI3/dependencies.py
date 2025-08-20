@@ -9,6 +9,7 @@ import json
 import tomllib
 from dataclasses import make_dataclass, field, asdict
 from typing import Any
+import mimetypes
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Callable, Optional, Dict, List, Any
