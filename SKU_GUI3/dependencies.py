@@ -1,5 +1,5 @@
 import csv
-import os
+import io,os
 import time
 import threading
 import subprocess
@@ -7,6 +7,7 @@ import sys
 import toml
 import json
 import tomllib
+from PIL import Image, ImageOps
 from dataclasses import make_dataclass, field, asdict, dataclass
 import typing as t
 import mimetypes

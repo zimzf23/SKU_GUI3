@@ -5,6 +5,7 @@ from state import state
 from transcode import decode_ref, decode_cls_wear
 from file_queries import get_thumbnail
 from encoding import blob_to_data_uri
+from ui_cards import main_card, visibility_controls, content_cards
 
 def get_basic_data(ref_val):
     # Creates a ref on the catalog and gets always present data
@@ -40,13 +41,17 @@ def look_content(ref_val,item):
     #Check content
     get_available_data(ref_val,item)
     # In search_flow.py, inside look_content(ref_val, item):
-    # Auto-enable visibility for available sections
-    state.external_visible = item.available.external > 0
-    state.mechanical_visible = item.available.mechanical > 0
-    state.electrical_visible = item.available.electrical > 0
-    state.shipping_visible = item.available.shipping > 0
-    state.supplier_visible = item.available.supplier > 0
-    state.finance_visible = item.available.finance > 0
-    state.certs_visible = item.available.certs > 0
-    state.enviromental_visible = item.available.enviromental > 0
+    # Don't auto-enable; only turn OFF flags for unavailable sections
+    state.external_visible     = state.external_visible     and (item.available.external > 0)
+    state.mechanical_visible   = state.mechanical_visible   and (item.available.mechanical > 0)
+    state.electrical_visible   = state.electrical_visible   and (item.available.electrical > 0)
+    state.shipping_visible     = state.shipping_visible     and (item.available.shipping > 0)
+    state.supplier_visible     = state.supplier_visible     and (item.available.supplier > 0)
+    state.finance_visible      = state.finance_visible      and (item.available.finance > 0)
+    state.certs_visible        = state.certs_visible        and (item.available.certs > 0)
+    state.enviromental_visible = state.enviromental_visible and (item.available.enviromental > 0)
+
+    main_card.refresh()
+    visibility_controls.refresh()
+    content_cards.refresh()
     print(item)

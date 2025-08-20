@@ -1,23 +1,6 @@
 from dependencies import *
 from state import state
 
-def insert_dummy():
-    insert_file_under_code(
-        state.sku_conn_string,
-        code="W-0E21-0001",
-        file_name="test.txt",
-        data=b"Hello FileTable! xd",
-        overwrite=True
-    )
-
-    insert_file_under_code(
-        state.sku_conn_string,
-        code="W-0E21-0001",
-        file_name="manual.pdf",
-        data=b"...bytes...",
-        folder="Datos Externos",      # <-- here
-)
-
 DOCS   = config["tables"]["documents"]
 SCHEMA = DOCS["schema"]          # 'dbo'
 TABLE  = DOCS["name"]            # 'ArticleDocuments'

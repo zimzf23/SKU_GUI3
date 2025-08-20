@@ -74,6 +74,7 @@ def external_card(owner, *, edit):
     recompute_props()  # <-- respect initial edit
 
     def save_changes():
+        upsert_external(item)
         commit_cached()
         toggle_edit()
 
@@ -82,18 +83,16 @@ def external_card(owner, *, edit):
         toggle_edit()
 
     def toggle_edit():
-            st.edit = not st.edit
-            st.field_props = 'outlined stack-label ' if st.edit else 'readonly borderless '
-            render.refresh()
-
+        st.edit = not st.edit
+        st.field_props = 'outlined stack-label ' if st.edit else 'readonly borderless '
+        print(item)
+        render.refresh()
 
     def handle_upload(e):
         # bytes from NiceGUI upload
         data = e.content.read() if hasattr(e.content, 'read') else e.content
-        original_ext = os.path.splitext(e.name)[1]  # ".png", ".jpg", ".pdf", ...
-        final_name = "Thumbnail" + original_ext
-        cache.add_file(code=state.current_ref, file_name=final_name, data=data, folder=None)
-    
+        cache.add_file(code=state.current_ref, file_name=e.name, data=data, folder="Documentos Externos")
+
     def commit_cached():
         ok, failed = cache.flush(conn_string=state.sku_conn_string, overwrite=True)
         if ok:
@@ -126,7 +125,7 @@ def external_card(owner, *, edit):
                         .props(st.field_props).style('height: 100px; overflow-y: auto; resize: none;')
                 if st.edit:
                     ui.upload(
-                        label='Datos Externos',
+                        label='Documentos',
                         multiple=True,
                         auto_upload=True,
                         on_upload=lambda e: handle_upload(e))

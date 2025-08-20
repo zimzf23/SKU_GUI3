@@ -9,9 +9,14 @@ class UploadCache:
         self._cache: dict[tuple[str, str | None], list[dict]] = {}
 
     def add_file(self, code: str, file_name: str, data: bytes, folder: str | None = None):
-        self._cache.setdefault((code, folder), []).append(
-            {"name": file_name, "data": data}
-        )
+        bucket = self._cache.setdefault((code, folder), [])
+        # replace if same name already exists (avoids PK collisions / dupes)
+        for i, f in enumerate(bucket):
+            if f['name'].lower() == file_name.lower():
+                bucket[i] = {"name": file_name, "data": data}
+                break
+        else:
+            bucket.append({"name": file_name, "data": data})
 
     def list(self, code: str) -> list[tuple[str, str | None, str, int]]:
         out = []

@@ -2,7 +2,7 @@
 from dependencies import *
 from state import state
 from ui_cards import external_card, main_card, visibility_controls, content_cards
-from ui_new import new_pages, check_available, create_main_card, control_card, content_controls
+from ui_new import new_pages, check_available, create_main_card, content_controls
 
 def styles():
     ui.add_head_html('<style>body {background-color: GhostWhite; }</style>')
@@ -106,11 +106,17 @@ def new_layout():
             
     # Main Body
     with ui.column().classes('w-full'):
+
         check_available()
-        create_main_card()
+        create_main_card((new_pages, 'main'), edit=True)
         content_controls()
         external_card((new_pages, 'external'), edit=True)
-                 
+                
     # Right Column
     with ui.right_drawer(fixed=True).props('width=400').style('background-color: GhostWhite;'):
-        control_card()
+        ui.label('')
+
+# Subscribe to state changes to refresh the card
+state.subscribe(lambda ref: create_main_card.refresh())
+state.subscribe(lambda ref: content_controls.refresh())  
+state.subscribe(lambda ref: external_card.refresh())  

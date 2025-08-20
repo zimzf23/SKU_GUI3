@@ -3,6 +3,7 @@ from state import state
 from new_sql import get_level_options, get_type_options, get_cat_options, get_subcat_options, get_next_code_number, insert_new
 from data import catalog
 
+
 def get_current_item():
     ref = (state.current_ref or "").strip()
     if not ref:
@@ -23,13 +24,10 @@ def load_options(select_box, query_func, *args, **kwargs):
     except Exception as ex:
         ui.notify(f'Error loading options: {ex}', type='negative')
 
-def show_basic_data():
-    if state.current_ref != 'W-':
-        state.new_basic = True
-    else:
-        state.new_basic = True
-
-
+def upload_data():
+    item = get_current_item()
+    insert_new(state.current_ref, item.basic.name, item.basic.description, item.basic.cls, item.basic.wear)
+    create_folder(state.current_ref, 'SKUs')
 
 
 
