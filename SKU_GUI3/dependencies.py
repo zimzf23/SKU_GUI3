@@ -7,8 +7,8 @@ import sys
 import toml
 import json
 import tomllib
-from dataclasses import make_dataclass, field, asdict
-from typing import Any
+from dataclasses import make_dataclass, field, asdict, dataclass
+import typing as t
 import mimetypes
 from pathlib import Path
 from types import SimpleNamespace

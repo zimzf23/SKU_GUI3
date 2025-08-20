@@ -2,7 +2,8 @@ from dependencies import *
 from state import state
 from data import catalog
 from new_sql import upsert_external, create_folder
-from sql_fs import insert_dummy
+from fscache import UploadCache
+cache = UploadCache()
 
 def get_current_item():
     ref = (state.current_ref or "").strip()
@@ -66,18 +67,41 @@ def external_card(owner, *, edit):
     item = get_current_item()
     # per-instance state (private to this call)
     st = SimpleNamespace(edit=edit)
+
+    #Helpers
     def recompute_props():
         st.field_props = 'outlined stack-label ' if st.edit else 'readonly borderless '
     recompute_props()  # <-- respect initial edit
+
     def save_changes():
-        insert_dummy()
+        commit_cached()
         toggle_edit()
-        render.refresh()
+
+    def discard_changes():
+        cache.clear()
+        toggle_edit()
 
     def toggle_edit():
             st.edit = not st.edit
             st.field_props = 'outlined stack-label ' if st.edit else 'readonly borderless '
             render.refresh()
+
+
+    def handle_upload(e):
+        # bytes from NiceGUI upload
+        data = e.content.read() if hasattr(e.content, 'read') else e.content
+        original_ext = os.path.splitext(e.name)[1]  # ".png", ".jpg", ".pdf", ...
+        final_name = "Thumbnail" + original_ext
+        cache.add_file(code=state.current_ref, file_name=final_name, data=data, folder=None)
+    
+    def commit_cached():
+        ok, failed = cache.flush(conn_string=state.sku_conn_string, overwrite=True)
+        if ok:
+            ui.notify(f'Uploaded: {", ".join(ok)}')
+        if failed:
+            for name, ex in failed:
+                ui.notify(f'Failed {name}: {ex}', type='negative')
+    #UI
     @ui.refreshable
     def render():
         with ui.card().classes('w-full mx-auto p-4').bind_visibility(*owner):
@@ -102,10 +126,10 @@ def external_card(owner, *, edit):
                         .props(st.field_props).style('height: 100px; overflow-y: auto; resize: none;')
                 if st.edit:
                     ui.upload(
-                        label='Upload Datos Externos',
+                        label='Datos Externos',
                         multiple=True,
                         auto_upload=True,
-                        on_upload=lambda e: cache_upload(e, kind="external"))
+                        on_upload=lambda e: handle_upload(e))
                 else:
                     with ui.column().classes('items-end h-full').style('min-width: 8rem;'):
                         ui.button('Hoja de datos', icon='file_open').classes('w-full')
